@@ -469,3 +469,74 @@ void realTimeTask(int id) {
 
     activeThreads--;  // Decrement the active thread count
 }
+
+// Controller function to manage threads
+void controller(vector<thread>& threads, int numThreads) {
+    cout << "Starting " << numThreads << " threads..." << endl;
+    logMessage("Starting " + to_string(numThreads) + " threads.");
+
+    // Create and start threads
+    for (int i = 0; i < numThreads; ++i) {
+        threads.push_back(thread(realTimeTask, i + 1));
+    }
+
+    cout << "Threads are running. Type 'stop' to terminate or 'status' to check active threads." << endl;
+    logMessage("Threads are running.");
+
+    // Monitor user commands
+    string command;
+    while (true) {
+        getline(cin, command);
+
+        if (command == "stop") {
+            stopThreads = true;
+            cv.notify_all();
+            break;
+        } else if (command == "status") {
+            cout << "Active Threads: " << activeThreads << endl;
+            logMessage("Active Threads: " + to_string(activeThreads));
+        } else if (command == "add") {
+            threads.push_back(thread(realTimeTask, threads.size() + 1));
+            cout << "Added a new thread. Total threads: " << threads.size() << endl;
+            logMessage("Added a new thread. Total threads: " + to_string(threads.size()));
+        } else if (command == "remove") {
+            if (!threads.empty()) {
+                stopThreads = true;
+                threads.back().join();
+                threads.pop_back();
+                stopThreads = false;
+                cout << "Removed one thread. Total threads: " << threads.size() << endl;
+                logMessage("Removed one thread. Total threads: " + to_string(threads.size()));
+            } else {
+                cout << "No threads to remove!" << endl;
+            }
+        } else {
+            cout << "Unknown command. Use 'stop', 'status', 'add', or 'remove'." << endl;
+        }
+    }
+
+    // Join all threads before exiting
+    for (auto& t : threads) {
+        if (t.joinable()) {
+            t.join();
+        }
+    }
+
+    cout << "All threads stopped." << endl;
+    logMessage("All threads stopped.");
+}
+
+// Main function
+int main() {
+    int numThreads;
+    srand(time(0));  // Seed for random task generation
+
+    cout << "Enter the number of threads to simulate: ";
+    cin >> numThreads;
+    cin.ignore();
+
+    vector<thread> threads;
+    controller(threads, numThreads);
+
+    return 0;
+}
