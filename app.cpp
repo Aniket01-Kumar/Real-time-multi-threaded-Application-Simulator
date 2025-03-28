@@ -164,3 +164,19 @@ void controller(vector<thread>& threads, int numThreads) {
     logMessage("All threads stopped.");
 }
 
+
+// Main function
+int main() {
+    int numThreads;
+    srand(time(0));  // Seed for random task generation
+
+    cout << "Enter the number of threads to simulate: ";
+    cin >> numThreads;
+    cin.ignore();
+
+    vector<thread> threads;
+    controller(threads, numThreads);
+
+    return 0;
+}
+
